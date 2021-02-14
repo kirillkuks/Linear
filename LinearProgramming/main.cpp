@@ -6,12 +6,10 @@
 int main(int argc, char* argv[]) {
 	if (argc > 1) {
 		Matrix m(2, 3);
-		m[1][2] = 4.4;
-		std::cout << m[1][2] << "<<<<<<<<<>>>>>>>>>>\n";
 		m[1][2] = 3.141;
 		std::cout << m[1][2] << "<<<<<<<<<>>>>>>>>>>\n";
-		//Parser parser(argv[1]);
-		//parser.parse();
+		Parser parser(argv[1]);
+		parser.parse();
 	}
 	return 0;
 }

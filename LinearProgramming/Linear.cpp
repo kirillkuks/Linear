@@ -23,3 +23,8 @@ Matrix::~Matrix() {
 	}
 	delete[] matrix;
 }
+
+
+Linear* Linear::get_dual_program() {
+	return dual_program;
+}

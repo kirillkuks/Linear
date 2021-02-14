@@ -12,7 +12,7 @@ void Parser::parse() {
 	std::stringstream ss;
 	LinearGrammar grammar;
 
-	std::vector<int> objective_function(5);
+	std::vector<double> objective_function(5);
 	while (std::getline(in, line)) {
 		ss << line;
 		std::cout << line << std::endl;

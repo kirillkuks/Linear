@@ -24,7 +24,11 @@ private:
 };
 
 struct Linear {
+	void create_dual_program();
+	Linear* get_dual_program();
 private:
 	Matrix matrix;
 	std::vector<double> objective_function;
+
+	Linear* dual_program;
 };
