@@ -13,8 +13,8 @@ double& Matrix::Vector::operator[](size_t index) {
 	return vector[index];
 }
 
-Matrix::Vector&& Matrix::operator[](size_t index) {
-	return std::move(Vector(matrix[index]));
+Matrix::Vector Matrix::operator[](size_t index) {
+	return Vector(matrix[index]);
 }
 
 Matrix::~Matrix() {

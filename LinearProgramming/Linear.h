@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 
 struct Matrix {
@@ -7,7 +8,7 @@ private:
 public:
 	Matrix(size_t, size_t);
 
-	Vector&& operator[](size_t);
+	Vector operator[](size_t);
 
 	~Matrix();
 private:
