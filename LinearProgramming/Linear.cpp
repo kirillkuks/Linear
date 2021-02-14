@@ -1,16 +1,15 @@
 #include "Linear.h"
 
 Matrix::Matrix(size_t n, size_t m = 0) : n{ n }, m{ m == 0 ? n : m } {
-	matrix = new int* [n];
+	matrix = new double* [n];
 	for (size_t i = 0; i < n; ++i) {
-		matrix[i] = new int[m];
+		matrix[i] = new double[m];
 	}
 }
 
-Matrix::Vector::Vector(int* vector) : vector{ vector } {}
+Matrix::Vector::Vector(double* vector) : vector{ vector } {}
 
-int& Matrix::Vector::operator[](size_t index) {
-	int f;
+double& Matrix::Vector::operator[](size_t index) {
 	return vector[index];
 }
 

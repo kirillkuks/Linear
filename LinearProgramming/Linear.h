@@ -12,18 +12,18 @@ public:
 	~Matrix();
 private:
 	struct Vector {
-		Vector(int*);
-		int& operator[](size_t);
+		Vector(double*);
+		double& operator[](size_t);
 	private:
-		int* vector;
+		double* vector;
 	};
 
-	int** matrix;
+	double** matrix;
 	size_t n, m;
 };
 
 struct Linear {
 private:
 	Matrix matrix;
-	int size;
+	std::vector<double> objective_function;
 };
