@@ -1,6 +1,11 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "Parser.h"
+
+struct Limitations;
+
+#define N 5
 
 struct Matrix {
 private:
@@ -9,6 +14,8 @@ public:
 	Matrix(size_t, size_t);
 
 	Vector operator[](size_t);
+
+	void print() const;
 
 	~Matrix();
 private:
@@ -24,10 +31,16 @@ private:
 };
 
 struct Linear {
+public:
+	Linear(std::vector<double>&, Limitations&, std::vector<bool>&);
+
 	void create_dual_program();
 	Linear* get_dual_program();
 private:
-	Matrix matrix;
+	static size_t vars_in_canonical(std::vector<double>&, Limitations&, std::vector<bool>&);
+
+	Matrix A;
+	std::vector<double> b;
 	std::vector<double> objective_function;
 
 	Linear* dual_program;

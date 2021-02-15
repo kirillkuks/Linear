@@ -6,12 +6,17 @@
 #include <sstream>
 #include "Linear.h"
 
+struct Linear;
+enum LT;
+
 struct Parser {
 public:
 	Parser(std::string);
-	void parse();
+	Linear parse();
 	~Parser();
 private:
+	LT define_sign(std::string& sign);
+
 	std::ifstream in;
 };
 
@@ -38,4 +43,18 @@ enum KW {
 	KW_GT,
 	KW_LE,
 	KW_NULL
+};
+
+enum LT {
+	LT_EQ,
+	LT_GT,
+	LT_LE,
+	LT_ERROR
+};
+
+struct Limitations {
+public:
+	Limitations();
+	void add_limitations(std::pair<std::vector<double>, LT>&&);
+	std::vector<std::pair<std::vector<double>, LT>> limitations;
 };
