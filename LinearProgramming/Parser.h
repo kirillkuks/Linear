@@ -6,8 +6,8 @@
 #include <sstream>
 #include "Linear.h"
 
-struct Linear;
 enum LT;
+struct Linear;
 
 struct Parser {
 public:

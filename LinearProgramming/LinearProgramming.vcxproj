@@ -142,10 +142,12 @@
     <ClCompile Include="Linear.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="SeidelMethod.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Linear.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="SeidelMethod.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
