@@ -20,6 +20,13 @@ Matrix::Matrix(Matrix const& other) : Matrix(other.n, other.m) {
 
 Matrix::Vector::Vector(double* vector) : vector{ vector } {}
 
+Matrix& Matrix::operator=(Matrix other) {
+	std::swap(matrix, other.matrix);
+	std::swap(n, other.n);
+	std::swap(m, other.m);
+	return *this;
+}
+
 double& Matrix::Vector::operator[](size_t index) {
 	return vector[index];
 }
@@ -65,11 +72,86 @@ Matrix::~Matrix() {
 Linear::Linear(std::vector<double>& function, Limitations& limitations, std::vector<bool>& vars_sign)
 	: A(limitations.limitations.size(), vars_in_canonical(function, limitations, vars_sign)),
 	b(limitations.limitations.size()),
-	objective_function(vars_in_canonical(function, limitations, vars_sign)),
+	objective_function(A.get_m()),
 	original_dimension(function.size()),
 	original_vars(function.size()),
+	task_type{ TT::TT_MIN },
 	dual_program(nullptr) {
 
+	to_canonical(function, limitations, vars_sign);
+
+	to_dual(function, limitations, vars_sign);
+
+	/*std::cout << "\n*****************************************\n";
+	for (auto elem : function) {
+		std::cout << elem << " ";
+	}
+	std::cout << "\n#########################################\n";
+	for (size_t i = 0; i < limitations.limitations.size(); ++i) {
+		for (size_t j = 0; j < limitations.limitations[i].first.size(); ++j) {
+			std::cout << limitations.limitations[i].first[j] << " ";
+		}
+		std::cout << " // sign: " << limitations.limitations[i].second << std::endl;
+	}
+	std::cout << "#########################################\n";
+	for (auto elem : vars_sign) {
+		std::cout << elem << " ";
+	}
+	std::cout << "\n*****************************************\n";*/
+	
+	dual_program = new Linear(function, limitations, vars_sign, this);
+}
+
+Linear::Linear(std::vector<double>& function, Limitations& limitations, std::vector<bool>& vars_sign, Linear* dual_program)
+	: A(limitations.limitations.size(), vars_in_canonical(function, limitations, vars_sign)),
+	b(limitations.limitations.size()),
+	objective_function(A.get_m()),
+	original_dimension(function.size()),
+	original_vars(function.size()),
+	task_type{ TT::TT_MAX },
+	dual_program{ dual_program } {
+
+	to_canonical(function, limitations, vars_sign);
+}
+
+void Linear::to_dual(std::vector<double>& function, Limitations& limitations, std::vector<bool>& vars_sign) {
+	std::vector<double> dual_function(limitations.limitations.size());
+	Limitations dual_limitations;
+	std::vector<bool> dual_vars_sign(dual_function.size());
+
+	for (size_t i = 0; i < dual_function.size(); ++i) {
+		if (limitations.limitations[i].second == LT::LT_LE) {
+			for (size_t j = 0; j < original_dimension + 1; ++j) {
+				limitations.limitations[i].first[j] *= -1;
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < dual_function.size(); ++i) {
+		dual_function[i] = limitations.limitations[i].first[original_dimension];
+	}
+
+	for (size_t i = 0; i < original_dimension; ++i) {
+		std::vector<double> new_limitation(dual_function.size() + 1);
+		for (size_t j = 0; j < dual_function.size(); ++j) {
+			new_limitation[j] = limitations.limitations[j].first[i];
+		}
+		new_limitation[dual_function.size()] = function[i];
+		dual_limitations.add_limitations({ new_limitation, vars_sign[i] ? LT::LT_LE : LT::LT_EQ });
+	}
+
+	for (size_t i = 0; i < dual_function.size(); ++i) {
+		if (limitations.limitations[i].second != LT::LT_EQ) {
+			dual_vars_sign[i] = true;
+		}
+	}
+
+	std::swap(dual_function, function);
+	std::swap(dual_limitations, limitations);
+	std::swap(dual_vars_sign, vars_sign);
+}
+
+void Linear::to_canonical(std::vector<double>& function, Limitations& limitations, std::vector<bool>& vars_sign) {
 	for (size_t i = 0; i < b.size(); ++i) {
 		b[i] = limitations.limitations[i].first[function.size()];
 	}
@@ -78,7 +160,7 @@ Linear::Linear(std::vector<double>& function, Limitations& limitations, std::vec
 	for (size_t i = 0; i < function.size(); ++i, ++m) {
 		if (vars_sign[i]) {
 			objective_function[m] = function[i];
-			original_vars[i] = {m, m};
+			original_vars[i] = { m, m };
 		}
 		else {
 			objective_function[m++] = function[i];
@@ -115,10 +197,11 @@ Linear::Linear(std::vector<double>& function, Limitations& limitations, std::vec
 	}
 	std::cout << "\nA:\n";
 	A.print();
-	std::cout << "\nb:\n";
+	std::cout << "b:\n";
 	for (auto elem : b) {
 		std::cout << elem << ' ';
 	}
+	std::cout << std::endl;
 }
 
 Linear* Linear::get_dual_program() {
@@ -236,7 +319,7 @@ std::vector<double> Linear::back_to_original_vars(std::vector<double>& x) {
 std::vector<double> Linear::solve_task() {
 	size_t canonical_dimension = objective_function.size();
 	std::vector<double> optimal(canonical_dimension);
-	double min = std::numeric_limits<double>::infinity();
+	double limit_value = task_type == TT::TT_MIN ? std::numeric_limits<double>::infinity() : -std::numeric_limits<double>::infinity();
 
 	std::vector<size_t> vectors_in_basis(b.size());
 	for (size_t i = 0; i < vectors_in_basis.size(); ++i) {
@@ -256,11 +339,12 @@ std::vector<double> Linear::solve_task() {
 					x[vectors_in_basis[i]] = res[i];
 				}
 
-				double potential_min = calculate_objective(x);
-				if (min > potential_min) {
+				double potentional_optimal = calculate_objective(x);
+				if ((task_type == TT::TT_MIN && limit_value > potentional_optimal) || (task_type == TT::TT_MAX && limit_value < potentional_optimal)) {
 					optimal = x;
-					min = potential_min;
+					limit_value = potentional_optimal;
 				}
+
 			}
 		}
 	} while (next_combination(vectors_in_basis, canonical_dimension));

@@ -17,6 +17,7 @@ public:
 	Matrix(size_t, size_t);
 	Matrix(Matrix const&);
 
+	Matrix& operator=(Matrix);
 	Vector operator[](size_t);
 
 	size_t get_n() const;
@@ -38,6 +39,11 @@ private:
 	size_t n, m;
 };
 
+enum TT {
+	TT_MIN = 0,
+	TT_MAX
+};
+
 struct Linear {
 public:
 	Linear(std::vector<double>&, Limitations&, std::vector<bool>&);
@@ -49,6 +55,10 @@ public:
 private:
 	static size_t vars_in_canonical(std::vector<double>&, Limitations&, std::vector<bool>&);
 	static bool next_combination(std::vector<size_t>&, size_t);
+
+	Linear(std::vector<double>&, Limitations&, std::vector<bool>&, Linear*);
+	void to_canonical(std::vector<double>&, Limitations&, std::vector<bool>&);
+	void to_dual(std::vector<double>&, Limitations&, std::vector<bool>&);
 	
 	bool is_linear_independence(Matrix&);
 	double calculate_objective(std::vector<double>&);
@@ -62,6 +72,7 @@ private:
 	Matrix A;
 	std::vector<double> b;
 	std::vector<double> objective_function;
+	TT task_type;
 
 	std::vector<std::pair<size_t, size_t>> original_vars;
 

@@ -46,7 +46,7 @@ enum KW {
 };
 
 enum LT {
-	LT_EQ,
+	LT_EQ = 0,
 	LT_GT,
 	LT_LE,
 	LT_ERROR
